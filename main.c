@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdbool.h>
 #include <SDL_mixer.h>
 #define TELA_W 1024
 #define TELA_H 768
@@ -9,7 +9,6 @@
 bool init();
 bool carregarMidia();
 void fechar();
-void input(SDL_Event evento, bool* sair);
 
 SDL_Window* janela = NULL;
 SDL_Surface*  superficie = NULL;
@@ -62,11 +61,23 @@ int main(int argc, char** argv) {
 
         SDL_Event evento;
 
-        input(evento, &jogando);
+        while (SDL_PollEvent(&evento)) {
+        switch (evento.type) {
+            case SDL_QUIT:
+                jogando = false;
+                break;
+            case SDL_KEYDOWN:
+                if(evento.key.keysym.sym == SDLK_ESCAPE)
+                    jogando = false;
+                break;
+            default:
+                break;
+            }
+        }
 
         SDL_Rect destino = {0,0,player.w,player.h};
 
-        SDL_BlitSurface(janela, NULL, superficie, NULL);
+        SDL_BlitSurface(imagem, NULL, superficie, NULL);
         SDL_UpdateWindowSurface(janela);
     }
 
@@ -110,7 +121,7 @@ bool carregarMidia() {
     return inicializacao;
 }
 
-void input(SDL_Event evento, bool* jogando) {
+bool input(SDL_Event evento, bool* jogando) {
 
     while (SDL_PollEvent(&evento)) {
         switch (evento.type) {
@@ -125,6 +136,7 @@ void input(SDL_Event evento, bool* jogando) {
                 break;
             }
         }
+        return jogando;
 }
 
 void fechar() {
