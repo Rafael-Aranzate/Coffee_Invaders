@@ -1,12 +1,35 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
-#define TELA_W 1024
-#define TELA_H 768
+#include <stdbool.h>
+#include <time.h>
 
-//Botoes a serem utilizados
+#define SCREEN_W 1024
+#define SCREEN_H 768
+#define VELOCIDADE_JOGADOR 8
+#define VELOCIDADE_TIRO 20
+
+
+typedef struct {
+    SDL_Renderer *renderer;
+    SDL_Window *janela;
+    int up;
+	int down;
+	int left;
+	int right;
+    int atirar;
+} OUTPUT;
+
+typedef struct {
+	int x;
+	int y;
+    int dx;
+	int dy;
+	int health;
+	SDL_Texture *textura;
+} ENTIDADE;
+
 enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_DEFAULT,
     KEY_PRESS_SURFACE_UP,
@@ -16,171 +39,242 @@ enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_TOTAL
 };
 
-//Inicializar SDL, com o titulo
-bool init(char* titulo);
-//Carregar midias
-bool carregarMidia();
-void fechar();
+OUTPUT output;
+ENTIDADE jogador;
+ENTIDADE bala;
+ENTIDADE inimigo1;
+ENTIDADE inimigo2;
+ENTIDADE inimigo3;
+ENTIDADE inimigo4;
+ENTIDADE background;
+bool jogando = true;
 
-//Carrega imagens individuais
-SDL_Surface* carregarSuperficie(char* path);
-//janela
-SDL_Window* janela = NULL;
-//A superficie exposta na janela
-SDL_Surface* superficie = NULL;
-//Imagem correspondente a um botao pressionado
-SDL_Surface* imagemTecla[KEY_PRESS_SURFACE_TOTAL];
-//Imagem atual
-SDL_Surface* imagemAtual = NULL;
+void iniciar(char* titulo);
+void input(void);
+void renderer(void);
+void imprimirRenderer(void);
+SDL_Texture* carregarTextura(char* arquivo);
+void desenharTextura(SDL_Texture* textura, int x, int y, int w, int h);
+void KeyDown(SDL_KeyboardEvent *evento);
+void KeyUp(SDL_KeyboardEvent *evento);
 
-struct sprite {
-    SDL_Texture *textura;
-    int w, h;
-};
 
-int main(int argc, char** argv) {
+int main(int arc, char** argv) {
 
-    char titulo[50] = "Jogo - PE";
+    char titulo[50] = "role de nave";
+    int i, quantidadeInimigos, ondas;
 
- 
-    init(titulo);
-    
-    carregarMidia();
+    //memset(&output, 0, sizeof(OUTPUT));
 
-    bool jogando = true;
-   imagemAtual = imagemTecla[KEY_PRESS_SURFACE_DEFAULT];
+    iniciar(titulo);
+
+    jogador.x = SCREEN_W / 2;
+    jogador.y = SCREEN_H / 2;
+    inimigo1.x = 100;
+    inimigo1.y = 120;
+    quantidadeInimigos = 5;
+    jogador.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/player.png");
+    bala.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/Lasers/laserRed01.png");
+    inimigo1.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/Enemies/enemyBlack01.png");
+    inimigo2.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/Enemies/enemyBlue02.png");
+    inimigo3.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/Enemies/enemyGreen03.png");
+    inimigo4.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/PNG/Enemies/enemyRed04.png");
+    background.textura = carregarTextura("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/Backgrounds/purple.png");
+
+
+    prepararRenderer();
+    imprimirRenderer();
 
     while(jogando) {
 
-        SDL_Event evento;
+        prepararRenderer();
+        desenharTextura(background.textura, 100, 100, SCREEN_W, SCREEN_H);
+        input();
+        jogador.x += jogador.dx;
+        jogador.y += jogador.dy;
 
-        while (SDL_PollEvent(&evento)) {
-            if(evento.type == SDL_QUIT) {
-                jogando = false;
-            }
-            else if(evento.type == SDL_KEYDOWN) {
-                    switch (evento.key.keysym.sym) {
-                        case SDLK_ESCAPE:
-                            jogando = false;
-                            break;
-                        case SDLK_UP:
-                            imagemAtual = imagemTecla[KEY_PRESS_SURFACE_UP];
-                            break;
-                        case SDLK_DOWN:
-                            imagemAtual = imagemTecla[KEY_PRESS_SURFACE_DOWN];
-                            break;
-                        case SDLK_LEFT:
-                            imagemAtual = imagemTecla[KEY_PRESS_SURFACE_LEFT];
-                            break;
-                        case SDLK_RIGHT:
-                            imagemAtual = imagemTecla[KEY_PRESS_SURFACE_RIGHT];
-                            break;
-                        default:
-                            imagemAtual = imagemTecla[KEY_PRESS_SURFACE_DEFAULT];
-                            break;
-                        }
-            }
+        if (output.up) {
+			jogador.y -= VELOCIDADE_JOGADOR;
+		}
+        //Limite de borda eixo y
+        if (output.up && jogador.y <= 0) {
+			jogador.y += VELOCIDADE_JOGADOR;
+		}
+		if (output.down) {
+			jogador.y += VELOCIDADE_JOGADOR;
+		}
+        //Limite de borda eixo -y
+        if (output.down && jogador.y >= SCREEN_H) {
+			jogador.y -= VELOCIDADE_JOGADOR;
+		}
+
+		if (output.left) {
+			jogador.x -= VELOCIDADE_JOGADOR;
+		}
+        //Limite de borda eixo -x
+        if (output.left && jogador.x <= 0) {
+			jogador.x += VELOCIDADE_JOGADOR;
+		}
+		if (output.right) {
+			jogador.x += VELOCIDADE_JOGADOR;
+		}
+        //Limite de borda eixo x
+        if (output.right && jogador.x >= SCREEN_H) {
+			jogador.x -= VELOCIDADE_JOGADOR;
+		}
+
+        if (output.atirar && bala.health == 0) {
+			bala.x = jogador.x + 50;
+			bala.y = jogador.y;
+			bala.dx = 0;
+			bala.dy = -VELOCIDADE_TIRO;
+			bala.health = 1;
+		}
+
+        bala.x += bala.dx;
+		bala.y += bala.dy;
+
+        if (bala.y < 0) {
+			bala.health = 0;
+		}
+
+        desenharTextura(jogador.textura, jogador.x, jogador.y, NULL, NULL);
+        desenharTextura(inimigo1.textura, 200, 200, NULL, NULL);
+
+        if (bala.health == 1) {
+			desenharTextura(bala.textura, bala.x, bala.y, NULL, NULL);
         }
 
-        SDL_Delay(17);
-
-        //Aplica a imagem a superficie
-        SDL_BlitSurface(imagemAtual, NULL, superficie, NULL);
-
-        //Atualiza a superficie
-        SDL_UpdateWindowSurface(janela);
+        imprimirRenderer();
+        SDL_Delay(16);
     }
-
-    //Libera recursos e termina o SDL
-    fechar();
+    SDL_Quit();
     return 0;
 }
 
-bool init(char* titulo) {
-
-    bool inicializacao = true;
+void iniciar(char* titulo) {
 
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    if(SDL_Init( SDL_INIT_EVERYTHING) < 0) {
-        printf( "Nao foi possivel inicializar o SDL! SDL_Error: %s\n", SDL_GetError());
-        inicializacao = false;
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("Nao foi possivel inicializar o SDL: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+    output.janela = SDL_CreateWindow(titulo, 1024, 768, SCREEN_W, SCREEN_H, SDL_WINDOW_RESIZABLE);
+
+    if (!output.janela) {
+		printf("Erro ao criar janela %d x %d: %s\n", SCREEN_W, SCREEN_H, SDL_GetError());
+		exit(1);
+	}
+    output.renderer = SDL_CreateRenderer(output.janela, -1, 0);
+
+    if (!output.renderer) {
+		printf("Erro ao criar renderer: %s\n", SDL_GetError());
+		exit(1);
+	}
+}
+
+void input(void) {
+    SDL_Event evento;
+
+    while (SDL_PollEvent(&evento)) {
+
+        if(evento.type == SDL_QUIT) {
+                jogando = false;
+            }
+            switch (evento.type) {
+               case SDLK_ESCAPE:
+                    jogando = false;
+                    break;
+                case SDL_KEYDOWN:
+                    KeyDown(&evento.key);
+                    break;
+                case SDL_KEYUP:
+                    KeyUp(&evento.key);
+                    break;
+                default:
+                    break;
+            }
     }
-
-    janela = SDL_CreateWindow(titulo, TELA_W, TELA_H, 1024, 768, SDL_WINDOW_RESIZABLE);
-
-    if(janela == NULL) {
-            printf("Erro a criar janela! SDL_Error: %s\n", SDL_GetError());
-        }
-
-    superficie = SDL_GetWindowSurface(janela);
-
-    return inicializacao;
 }
 
-bool carregarMidia() {
-
-    bool inicializacao = true;
-
-    imagemTecla[KEY_PRESS_SURFACE_DEFAULT] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/Mario_Sprites.png");
-
-    if (imagemTecla[KEY_PRESS_SURFACE_DEFAULT] == NULL) {
-        printf("Nao foi possivel carregar a imagem padrao %s! SDL Error: %s\n", "Mario_Sprites.png", SDL_GetError());
-        inicializacao = false;
-        }
-    
-    imagemTecla[KEY_PRESS_SURFACE_UP] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/up.png");
-
-    if (imagemTecla[KEY_PRESS_SURFACE_UP] == NULL) {
-        printf("Nao foi possivel carregar a imagem up %s! SDL Error: %s\n", "Mario_Sprites.png", SDL_GetError());
-        inicializacao = false;
-        }
-
-    imagemTecla[KEY_PRESS_SURFACE_DOWN] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/down.png");
-
-    if (imagemTecla[KEY_PRESS_SURFACE_DOWN] == NULL) {
-        printf("Nao foi possivel carregar a imagem down %s! SDL Error: %s\n", "Mario_Sprites.png", SDL_GetError());
-        inicializacao = false;
-        }
-    
-    imagemTecla[KEY_PRESS_SURFACE_LEFT] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/left.png");
-
-    if (imagemTecla[KEY_PRESS_SURFACE_LEFT] == NULL) {
-        printf("Nao foi possivel carregar a imagem left %s! SDL Error: %s\n", "Mario_Sprites.png", SDL_GetError());
-        inicializacao = false;
-        }
-
-    imagemTecla[KEY_PRESS_SURFACE_RIGHT] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/right.png");
-
-    if (imagemTecla[KEY_PRESS_SURFACE_RIGHT] == NULL) {
-        printf("Nao foi possivel carregar a imagem right %s! SDL Error: %s\n", "Mario_Sprites.png", SDL_GetError());
-        inicializacao = false;
-        }
-
-    imagemTecla[KEY_PRESS_SURFACE_DEFAULT] = carregarSuperficie("/home/rafael_aranzate/Desktop/Comp_I/Jogo/Sprites/Mario_Sprites.png");
-
-    return inicializacao;
+void prepararRenderer(void) {
+    SDL_SetRenderDrawColor(output.renderer, 111, 133, 255, 255);
+    SDL_RenderClear(output.renderer);
 }
 
-SDL_Surface* carregarSuperficie(char* path) {
-    SDL_Surface* imagemCarregada =  IMG_Load(path);
-
-     if (imagemCarregada == NULL)
-    {
-        printf( "Nao foi possivel carregar a imagem %s! SDL Error: %s\n", path, SDL_GetError() );
-    }
-
-    return imagemCarregada;
+void imprimirRenderer(void) {
+    SDL_RenderPresent(output.renderer);
 }
 
-void fechar() {
+SDL_Texture* carregarTextura(char* arquivo) {
+    SDL_Texture* textura;
+    textura = IMG_LoadTexture(output.renderer, arquivo);
 
-    SDL_FreeSurface(superficie);
-    superficie = NULL;
-
-    SDL_DestroyWindow(janela);
-    janela = NULL;
-
-    SDL_Quit();
+    return textura;
 }
-//gcc -o main main.c `sdl2-config --cflags --libs` -lSDL2 -lSDL2_image
+
+void desenharTextura(SDL_Texture* textura, int x, int y, int w, int h) {
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
+    dest.w = w;
+    dest.h = h;
+
+    SDL_QueryTexture(textura, NULL, NULL, &dest.w, &dest.h);
+
+    SDL_RenderCopy(output.renderer, textura, NULL, &dest);
+}
+
+void KeyDown(SDL_KeyboardEvent *evento){
+	if (evento->repeat == 0) {
+		if (evento->keysym.scancode == SDL_SCANCODE_UP) {
+			output.up = 1;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_DOWN) {
+			output.down = 1;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_LEFT) {
+			output.left = 1;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_RIGHT) {
+			output.right = 1;
+		}
+        if (evento->keysym.scancode == SDL_SCANCODE_Z) {
+	        output.atirar = 1;
+        }
+        if (evento->keysym.scancode == SDL_SCANCODE_ESCAPE) {
+			SDL_Quit();
+		}
+	}
+}
+void KeyUp(SDL_KeyboardEvent *evento){
+	if (evento->repeat == 0) {
+		if (evento->keysym.scancode == SDL_SCANCODE_UP) {
+			output.up = 0;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_DOWN) {
+			output.down = 0;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_LEFT) {
+			output.left = 0;
+		}
+
+		if (evento->keysym.scancode == SDL_SCANCODE_RIGHT) {
+			output.right = 0;
+		}
+        if (evento->keysym.scancode == SDL_SCANCODE_Z) {
+	        output.atirar = 0;
+        }
+        if (evento->keysym.scancode == SDL_SCANCODE_ESCAPE) {
+			SDL_Quit();
+		}
+	}
+}
+//gcc -o main2 main2.c `sdl2-config --cflags --libs` -lSDL2 -lSDL2_image
