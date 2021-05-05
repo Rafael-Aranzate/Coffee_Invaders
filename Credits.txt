@@ -1,0 +1,2 @@
+Os sprites e arquivos visuais utilizados neste projeto, veio de um pacote chamado Space Shooter Redux criado por Kenney com uma licenca livre 
+e foram retirados do site: https://kenney.nl/assets/space-shooter-redux
