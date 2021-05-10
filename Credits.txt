@@ -1,2 +1,2 @@
-Os sprites e arquivos visuais utilizados neste projeto, veio de um pacote chamado Space Shooter Redux criado por Kenney com uma licenca livre 
-e foram retirados do site: https://kenney.nl/assets/space-shooter-redux
+Os sprites das naves, inimigos e lasers, e também efeito sonoro dos lasers utilizados neste projeto, veio de um pacote chamado Space Shooter Redux criado por Kenney com uma liçenca livre e foram retirados do site: https://kenney.nl/assets/space-shooter-redux
+Música Royalty Free criada por Ben Sound.
