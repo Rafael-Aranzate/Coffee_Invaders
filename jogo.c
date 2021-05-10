@@ -81,10 +81,10 @@ int main(int argc, char** argv) {
     char pontuacaoString[1000], hp[10], fase[10], nome1[30], nome2[30], nome3[30], pontuacao1[100], pontuacao2[100], pontuacao3[100], outputName[30];
 
     iniciar(titulo);
-    BebasNeue = TTF_OpenFont("../Coffee_Invaders/BebasNeue-Regular.ttf", 24);
+    BebasNeue = TTF_OpenFont("../Coffee_Invaders-main/BebasNeue-Regular.ttf", 24);
     SDL_SetRenderDrawColor(output.renderer, 111, 133, 255, 255);
-    Mix_Chunk* tiroSFX = Mix_LoadWAV("../Coffee_Invaders/Assets/sfx_laser1.ogg");
-    Mix_Music* musica = Mix_LoadMUS("../Coffee_Invaders/Assets/bensound-endlessmotion.mp3");
+    Mix_Chunk* tiroSFX = Mix_LoadWAV("../Coffee_Invaders-main/Assets/sfx_laser1.ogg");
+    Mix_Music* musica = Mix_LoadMUS("../Coffee_Invaders-main/Assets/bensound-endlessmotion.mp3");
     Mix_PlayMusic(musica, -1);
     
 
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         defMenu();
         defCafe();
         defExplosao();
-        file = fopen("../Coffee_Invaders/highscore.txt", "r");
+        file = fopen("../Coffee_Invaders-main/highscore.txt", "r");
 
         fscanf(file, "%s", nome1);
         fscanf(file, "%s", pontuacao1);
@@ -523,7 +523,7 @@ int main(int argc, char** argv) {
                 nomeMenu = false;
                 sprintf(pontuacaoString, "%d", pontuacao);
                 //SDL_RWwrite(file, outputName, sizeof(outputName), 1);
-                FILE *file = fopen("../Coffee_Invaders/highscore.txt", "a+");
+                FILE *file = fopen("../Coffee_Invaders-main/highscore.txt", "a+");
                 if(file!=NULL){
                 fputs(outputName, file);
                 fputs("\n", file);
@@ -616,7 +616,7 @@ void KeyDown(SDL_KeyboardEvent *evento){
 void defMenu() {
     menu = malloc(sizeof(ENTIDADE));
 
-    menu->textura = IMG_Load("../Coffee_Invaders/Assets/menu.jpg");
+    menu->textura = IMG_Load("../Coffee_Invaders-main/Assets/menu.jpg");
     menu->x = 0;
     menu->y = 0;
     menu->w = SCREEN_W;
@@ -626,7 +626,7 @@ void defMenu() {
 void defBackground() {
     background = malloc(sizeof(ENTIDADE));
 
-    background->textura = IMG_Load("../Coffee_Invaders/Assets/purple.png");
+    background->textura = IMG_Load("../Coffee_Invaders-main/Assets/purple.png");
     background->x = 0;
     background->y = 0;
     background->w = SCREEN_W;
@@ -636,7 +636,7 @@ void defBackground() {
 void defJogador() {
     jogador = malloc(sizeof(ENTIDADE));
 
-    jogador->textura = IMG_Load("../Coffee_Invaders/Assets/player.png");
+    jogador->textura = IMG_Load("../Coffee_Invaders-main/Assets/player.png");
     jogador->x = SCREEN_W / 2 - 20;
     jogador->y = SCREEN_H - 100;
     jogador->w = SCREEN_W / 9;
@@ -648,7 +648,7 @@ void defJogador() {
 void defInimigo1() {
     inimigo1 = malloc(sizeof(ENTIDADE));
 
-    inimigo1->textura = IMG_Load("../Coffee_Invaders/Assets/enemyBlack1.png");
+    inimigo1->textura = IMG_Load("../Coffee_Invaders-main/Assets/enemyBlack1.png");
     inimigo1->x = SCREEN_W / 2;
     inimigo1->y = SCREEN_H / 2;
     inimigo1->w = SCREEN_W / 10;
@@ -662,7 +662,7 @@ void defInimigo1() {
 void defInimigo2() {
     inimigo2 = malloc(sizeof(ENTIDADE));
 
-    inimigo2->textura = IMG_Load("../Coffee_Invaders/Assets/enemyRed2.png");
+    inimigo2->textura = IMG_Load("../Coffee_Invaders-main/Assets/enemyRed2.png");
     inimigo2->x = SCREEN_W / 4;
     inimigo2->y = SCREEN_H / 4;
     inimigo2->w = SCREEN_W / 10;
@@ -676,7 +676,7 @@ void defInimigo2() {
 void defTiro() {
     tiro =  malloc(sizeof(ENTIDADE));
 
-    tiro->textura = IMG_Load("../Coffee_Invaders/Assets/laserRed01.png");
+    tiro->textura = IMG_Load("../Coffee_Invaders-main/Assets/laserRed01.png");
     tiro->dx = 0;
     tiro->dy = -VELOCIDADE_TIRO;
     tiro->w = SCREEN_H / 36;
@@ -687,7 +687,7 @@ void defTiro() {
 void defCafe() {
     cafe = malloc(sizeof(ENTIDADE));
 
-    cafe->textura = IMG_Load("../Coffee_Invaders/Assets/cafe.png");
+    cafe->textura = IMG_Load("../Coffee_Invaders-main/Assets/cafe.png");
     cafe->x = NULL;
     cafe->y = NULL;
     cafe->w = SCREEN_H / 10;
@@ -696,7 +696,7 @@ void defCafe() {
 void defExplosao() {
     explosao = malloc(sizeof(ENTIDADE));
 
-    explosao->textura = IMG_Load("../Coffee_Invaders/Assets/explosao.png");
+    explosao->textura = IMG_Load("../Coffee_Invaders-main/Assets/explosao.png");
     explosao->x = NULL;
     explosao->y = NULL;
     explosao->w = SCREEN_W / 4;
