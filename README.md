@@ -4,4 +4,4 @@ Nome do Jogo: Coffee Invaders
 
 Desenvolvido por: Rafael Rocha Aranzate
 
-Professor: Felipe Braida e Ubiratam de Paula
+Professores: Filipe Braida e Ubiratam de Paula
